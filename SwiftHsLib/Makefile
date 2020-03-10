@@ -7,8 +7,8 @@ cabal-build:
 	$(CABAL) new-configure --disable-shared --enable-static --allow-newer --ghc-option=-fllvm
 	$(CABAL) new-build --allow-newer --ghc-option=-fllvm
 
-binaries/iOS/$(ARCHIVE).a:
-	# CABAL=x86_64-apple-ios-cabal make cabal-build
+binaries/iOS/$(ARCHIVE).a: src/*.hs
+	CABAL=x86_64-apple-ios-cabal make cabal-build
 	CABAL=aarch64-apple-ios-cabal make cabal-build
 	mkdir -p $(@D)
 	find . -path "*-ios*" -name "${ARCHIVE}*ghc*.a" -exec lipo -create -output $@ {} +
