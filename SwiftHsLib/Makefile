@@ -1,15 +1,16 @@
 LIB=SwiftHsLib
 
 ARCHIVE=libHS${LIB}
+GHC_TH_OPTIONS=-fexternal-interpreter -pgmi=${HOME}/.ghcup/bin/iserv-proxy -opti10.0.0.5 -opti5000
 
 .PHONY: cabal-build
 cabal-build:
 	$(CABAL) new-configure --disable-shared --enable-static --allow-newer --ghc-option=-fllvm
-	$(CABAL) new-build --allow-newer --ghc-option=-fllvm
+	$(CABAL) new-build --allow-newer --ghc-option="-fllvm" # ${GHC_TH_OPTIONS}
 
 binaries/iOS/$(ARCHIVE).a: src/*.hs
 	CABAL=x86_64-apple-ios-cabal make cabal-build
-	CABAL=aarch64-apple-ios-cabal make cabal-build
+	# CABAL=aarch64-apple-ios-cabal make cabal-build
 	mkdir -p $(@D)
 	find . -path "*-ios*" -name "${ARCHIVE}*ghc*.a" -exec lipo -create -output $@ {} +
 

@@ -3,3 +3,6 @@
 //
 
 #import "HsLib_stub.h"
+#import "stdlib.h"
+
+extern void startSlave(int verbose, int port, char* path);
