@@ -6,31 +6,32 @@ module HsLib (chello) where
 -- import Development.GitRev (gitHash)
 import Foreign.C (CString, newCString)
 import Data.Maybe
-import qualified Data.Vector as V hiding((++), take)
 import Network.Socket
 import Remote.Slave
 import System.IO.Unsafe
 import Control.Concurrent
-import qualified Data.ByteString.Char8 as S
+import Control.Concurrent.MVar
 
 -- | export haskell function @chello@ as @hello@.
 foreign export ccall "hello" chello :: IO CString
 
 -- | Tiny wrapper to return a CString
--- chello = newCString (hello ++ "\nfirst 20 primes: \n" ++ show (vecAt 5))
+-- chello = newCString (hello ++ "\nfirst 20 primes: \n" ++ show primes20)
 chello = do
-  _ <- doSocketDemo
+  mend <- newEmptyMVar
+  tid <- forkIO $ doSocketDemo mend
+  putStrLn $ "tid = " ++ show tid
   -- docroot <- newCString "/tmp"
   -- _ <- forkIO $ startSlave True 5000 docroot
   putStrLn "lunched the socket server"
+  v <- takeMVar mend
+  putStrLn $ "Socket server return " ++ show v
   newCString $ hello ++ " socket opened"
 
 -- | Pristine haskell function.
 hello = "Hello from Haskell"
 
 -- welcom = "Wecom to iOS ghc\nversion: " ++ $gitHash
-
-vecAt i = (V.generate (i+3) id) V.! i
 
 primes20 = take 20 primes
 
@@ -52,7 +53,7 @@ acceptSocketS :: Socket -> IO Socket
 acceptSocketS = fmap fst . accept
 -}
 
-doSocketDemo = do
+doSocketDemo mend = do
   let portNum = 5000
   sock <- openSocket (toEnum 5000)
   putStrLn "Opening socket"
@@ -60,6 +61,7 @@ doSocketDemo = do
   putStrLn $ "Listening on port " ++ show portNum
   doChat sockn
   close sockn
+  putMVar mend 1
   putStrLn "serv ended"
   return ()
 
